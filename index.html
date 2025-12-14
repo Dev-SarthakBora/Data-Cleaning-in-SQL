@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SQL Layoffs Data Analysis</title>
+
+<style>
+:root {
+  --bg: #020617;
+  --card: #111827;
+  --accent: #38bdf8;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --code-bg: #020617;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(120deg, #020617, #0f172a);
+  color: var(--text);
+}
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 2rem 1.2rem;
+}
+
+section {
+  margin-bottom: 3.5rem;
+  animation: fadeUp 0.8s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hero {
+  text-align: center;
+  padding: 3.5rem 1rem;
+}
+
+.hero h1 {
+  font-size: 2.4rem;
+}
+
+.hero span {
+  color: var(--accent);
+}
+
+.hero p {
+  color: var(--muted);
+  max-width: 720px;
+  margin: auto;
+}
+
+.card {
+  background: var(--card);
+  padding: 1.5rem;
+  border-radius: 14px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.06);
+}
+
+h2 {
+  border-left: 4px solid var(--accent);
+  padding-left: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.grid-2 {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.code-block {
+  background: var(--code-bg);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  overflow-x: auto;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+}
+
+code {
+  color: #7dd3fc;
+  font-family: Consolas, monospace;
+  font-size: 0.9rem;
+  white-space: pre;
+}
+
+img {
+  width: 100%;
+  border-radius: 12px;
+  transition: transform 0.4s ease;
+}
+
+img:hover {
+  transform: scale(1.03);
+}
+
+.footer {
+  text-align: center;
+  padding: 2rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  color: var(--muted);
+}
+
+.footer span {
+  color: var(--accent);
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<!-- HERO -->
+<section class="hero">
+  <h1>SQL <span>Layoffs Data Analysis</span></h1>
+  <p>
+    An end-to-end SQL project focused on data cleaning and exploratory data analysis
+    to uncover global layoff trends across companies, industries, countries, and time.
+  </p>
+</section>
+
+<!-- PROJECT OVERVIEW -->
+<section>
+  <h2>📘 Project Overview</h2>
+  <div class="card">
+    This project analyzes a global layoffs dataset using pure SQL. The objective was to
+    clean raw data, resolve inconsistencies, and perform exploratory analysis to identify
+    major trends in layoffs across companies, industries, countries, and years.
+  </div>
+</section>
+
+<!-- DATASET DESCRIPTION -->
+<section>
+  <h2>📂 Dataset Description</h2>
+  <div class="card">
+    The dataset contains company-level layoff records with the following attributes:
+    <ul>
+      <li><strong>Company</strong> – Company name</li>
+      <li><strong>Location</strong> – City of operation</li>
+      <li><strong>Industry</strong> – Business sector</li>
+      <li><strong>Total Laid Off</strong> – Number of employees laid off</li>
+      <li><strong>Percentage Laid Off</strong> – Proportion of workforce impacted</li>
+      <li><strong>Date</strong> – Layoff announcement date</li>
+      <li><strong>Stage</strong> – Funding or company stage</li>
+      <li><strong>Country</strong> – Country of operation</li>
+      <li><strong>Funds Raised</strong> – Total funding raised (USD millions)</li>
+    </ul>
+    The raw data required extensive cleaning due to duplicates, inconsistent naming,
+    missing values, and incorrect data types.
+  </div>
+</section>
+
+<!-- TOOLS -->
+<section>
+  <h2>🛠 Tools Used</h2>
+  <div class="grid grid-2">
+    <div class="card">MySQL<br><small>Data Cleaning & EDA</small></div>
+    <div class="card">SQL Window Functions<br><small>Deduplication & Analysis</small></div>
+  </div>
+</section>
+
+<!-- DATA CLEANING -->
+<section>
+  <h2>🧹 Data Cleaning (SQL)</h2>
+
+  <div class="card">
+    <strong>Removing Duplicate Records</strong>
+    <div class="code-block">
+      <code>
+WITH duplicate_cte AS (
+  SELECT *,
+  ROW_NUMBER() OVER (
+    PARTITION BY company, location, industry,
+    total_laid_off, percentage_laid_off,
+    date, stage, country, funds_raised_millions
+  ) AS row_num
+  FROM layoff_staging
+)
+DELETE FROM layoff_staging2
+WHERE row_num > 1;
+      </code>
+    </div>
+    <p>Duplicates were identified and removed using window functions.</p>
+  </div>
+
+  <div class="card">
+    <strong>Standardizing Industry Names</strong>
+    <div class="code-block">
+      <code>
+UPDATE layoff_staging2
+SET industry = 'Crypto'
+WHERE industry IN ('Crypto Currency', 'CryptoCurrency');
+      </code>
+    </div>
+    <p>Inconsistent industry labels were standardized.</p>
+  </div>
+
+  <div class="card">
+    <strong>Fixing Date Format</strong>
+    <div class="code-block">
+      <code>
+UPDATE layoff_staging2
+SET date = STR_TO_DATE(date, '%m/%d/%Y');
+
+ALTER TABLE layoff_staging2
+MODIFY date DATE;
+      </code>
+    </div>
+    <p>Date values were converted from text to SQL DATE format.</p>
+  </div>
+
+</section>
+
+<!-- EDA -->
+<section>
+  <h2>📊 Exploratory Data Analysis</h2>
+
+  <div class="card">
+    <strong>Top 10 Companies by Layoffs</strong>
+    <div class="code-block">
+      <code>
+SELECT company, SUM(total_laid_off) AS total_layoffs
+FROM layoff_staging2
+GROUP BY company
+ORDER BY total_layoffs DESC
+LIMIT 10;
+      </code>
+    </div>
+    <p>Identifies companies responsible for the highest number of layoffs.</p>
+  </div>
+
+  <div class="card">
+    <strong>Industry-wise Layoffs</strong>
+    <div class="code-block">
+      <code>
+SELECT industry, SUM(total_laid_off)
+FROM layoff_staging2
+GROUP BY industry
+ORDER BY 2 DESC;
+      </code>
+    </div>
+    <p>Highlights industries most impacted by layoffs.</p>
+  </div>
+
+  <div class="card">
+    <strong>Country-wise Layoffs</strong>
+    <div class="code-block">
+      <code>
+SELECT country, SUM(total_laid_off)
+FROM layoff_staging2
+GROUP BY country
+ORDER BY 2 DESC;
+      </code>
+    </div>
+    <p>Shows geographical distribution of layoffs.</p>
+  </div>
+
+  <div class="card">
+    <strong>Year-wise Layoff Trends</strong>
+    <div class="code-block">
+      <code>
+SELECT YEAR(date), SUM(total_laid_off)
+FROM layoff_staging2
+GROUP BY YEAR(date)
+ORDER BY 1 DESC;
+      </code>
+    </div>
+    <p>Analyzes how layoffs changed over time.</p>
+  </div>
+</section>
+
+<!-- SCREENSHOTS -->
+<section>
+  <h2>🖼 SQL Output Screenshots</h2>
+  <div class="grid grid-2">
+    <img src="images/top_companies.png" alt="Top companies result">
+    <img src="images/industry.png" alt="Industry result">
+    <img src="images/country.png" alt="Country result">
+    <img src="images/year.png" alt="Year result">
+  </div>
+</section>
+
+<!-- INSIGHTS -->
+<section>
+  <h2>🔍 Key Insights</h2>
+  <div class="card">
+    <ul>
+      <li>Layoffs are concentrated among a limited number of companies.</li>
+      <li>Technology-driven industries experienced the highest layoffs.</li>
+      <li>The United States leads in total layoffs globally.</li>
+      <li>Layoff trends show significant spikes during certain years.</li>
+    </ul>
+  </div>
+</section>
+
+</div>
+
+<div class="footer">
+  Built by <span>Sarthak Bora</span> • SQL Data Analytics Project
+</div>
+
+</body>
+</html>
